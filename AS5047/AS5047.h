@@ -1,7 +1,7 @@
 /**
  * @file AS5047.h
  * @brief Header file containing the AS5047 class compatible with mbed-os 6 (baremetal or multithread) using SPI interface all function are blocking
- * @author Hugues Angelis
+ * @author Hugues Angelis - Henoc Mukumbi
  * @date March 2022
  *
  * @section LICENSE
