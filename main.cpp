@@ -86,8 +86,8 @@ long incrementalAngleHandling (short angle, AS5047::T_AS5047_Rotation direction)
     } else {
         if ((direction == AS5047::CW_increasing) && (angle < lastAngle)) angle = angle + 16384;
         if ((direction == AS5047::CCW_decreasing) && (angle > lastAngle)) angle = angle - 16384;
-        lastAngle = (long)angle;
         diffAngle = (long)angle - lastAngle;
+        lastAngle = (long)angle;
     }
     return diffAngle;
 }
