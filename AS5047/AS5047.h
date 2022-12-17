@@ -1,7 +1,7 @@
 /**
  * @file AS5047.h
  * @brief Header file containing the AS5047 class compatible with mbed-os 6 (baremetal or multithread) using SPI interface all function are blocking
- * @author Hugues Angelis
+ * @author Hugues Angelis - Henoc Mukumbi
  * @date March 2022
  *
  * @section LICENSE
@@ -172,8 +172,8 @@ class AS5047 {
  *         diffAngle = 0;
  *         firstTime = false;
  *     } else {
- *         if ((direction == AS5047::CW_ascending) && (angle < lastAngle)) angle = angle + 16384;
- *         if ((direction == AS5047::CCW_descending) && (angle > lastAngle)) angle = angle - 16384;
+ *         if ((direction == AS5047::CW_increasing) && (angle < lastAngle)) angle = angle + 16384;
+ *         if ((direction == AS5047::CCW_decreasing) && (angle > lastAngle)) angle = angle - 16384;
  *         lastAngle = (long)angle;
  *         diffAngle = (long)angle - lastAngle;
  *     }
@@ -182,36 +182,34 @@ class AS5047 {
  * \endcode
  */
 
-public :
+private :
 
 /**
- *  \typedef ushort
  *  \brief short hand for unsigned short.
  *  \note Value from 0 to 65535.
  */
 typedef unsigned short ushort;
 
 /**
- *  \typedef uchar
  *  \brief short hand for unsigned char.
  *  \note Value from 0 to 255.
  */
 typedef unsigned char uchar;
 
+public :
+
 /**
- *  \typedef T_AS5047_Rotation
  *  Easy to use type to identify rotation direction.
  *  \brief Explicit information list :
- *  \param CW_increasing        = 0   : magnet is turning CW, angle is increasing
- *  \param CCW_decreasing       = 1   : magnet is turning CCW, angle is decreasing
+ *  \param CW_increasing        = 0   : magnet is turning Clockwise (ie : angle value is increasing)
+ *  \param CCW_decreasing       = 1   : magnet is turning Counterclockwise (ie : angle value is decreasing)
  */
 typedef enum {
-    CW_ascending = 0,
-    CCW_descending = 1
+    CW_increasing  = 0,
+    CCW_decreasing = 1
 } T_AS5047_Rotation;
 
 /**
- *  \typedef T_AS5047_Error
  *  Error(s) are detected by the functions and indicate a problem coming from code execution.
  *  \brief Explicit error code list :
  *  \param AS5047_ERR_OK      = 0   : OK - No error
@@ -227,23 +225,38 @@ typedef enum {
 typedef short T_AS5047_Error;
 
 /**
- *  \typedef T_AS5047_DIAG
- *  Error(s) that are detected by the sensor.
- *  The value of diagnostic is obtained by a sensor interrogation (that is automaticaly performed when the ERROR FLAG is set) and list errors détected by the sensor.
  *  \brief Explicit diagnostic code list :
- *  \param AS5047_DIAG_OK        = 0     : OK - No error
- *  \param AS5047_DIAG_PARITY    = 1     : Parity Error - The parity computed by the sensor is different of the one in the frame it received
- *  \param AS5047_DIAG_INVCOMM   = 2     : Invalid command - The command address is not valid
- *  \param AS5047_DIAG_FRAME     = 4     : Frame Error - The frame received is not a valid SPI frame
- *  \param AS5047_DIAG_MAGL      = 8     : Magnetic error - The magnetic field is too low and sensor is not able to give a reliable position vector 
- *  \param AS5047_DIAG_MAGH      = 16    : Magnetic error - The magnetic field is too strong and sensor is not able to give a reliable position vector 
- *  \param AS5047_DIAG_CORDIC    = 32    : CORDIC Error - The coordinate rotating digital computer is experiencing an overflow and sensor is not able to give a reliable position vector
- *  \param AS5047_DIAG_NOT_READY = 64    : NOT READY - The offset compensation loop hasn't finish converging and sensor is giving an unaccurate position vector
- *  \param AS5047_DIAG_FAIL      =128    : Diagnostic frame error - The diagnostic frame was erroneous
- *  \param AS5047_DIAG_ERR_FAIL  =256    : Error Flag Frame Error - The error flag frame was erroneous
- *  \note The value obtained is the sum of all errors detected (for example if there is a NOT READY and a MAGH, value will be 80 (= 16 + 64))
+ *  \param AS5047_DIAG_OK        =   0 : OK - No error
+ *  \param AS5047_DIAG_PARITY    =   1 : Parity Error - The parity computed by the sensor is different of the one in the frame it received
+ *  \param AS5047_DIAG_INVCOMM   =   2 : Invalid command - The command address is not valid
+ *  \param AS5047_DIAG_FRAME     =   4 : Frame Error - The frame received is not a valid SPI frame
+ *  \param AS5047_DIAG_MAGL      =   8 : Magnetic error - The magnetic field is too low and sensor is not able to give a reliable position vector 
+ *  \param AS5047_DIAG_MAGH      =  16 : Magnetic error - The magnetic field is too strong and sensor is not able to give a reliable position vector 
+ *  \param AS5047_DIAG_CORDIC    =  32 : CORDIC Error - The coordinate rotating digital computer is experiencing an overflow and sensor is not able to give a reliable position vector
+ *  \param AS5047_DIAG_NOT_READY =  64 : NOT READY - The offset compensation loop hasn't finish converging and sensor is giving an unaccurate position vector
+ *  \param AS5047_DIAG_FAIL      = 128 : Diagnostic frame error - The diagnostic frame was erroneous
+ *  \param AS5047_DIAG_ERR_FAIL  = 256 : Error Flag Frame Error - The error flag frame was erroneous
+ *  \note The value obtained is the sum of all detected errors (for example if there is a NOT READY and a MAGH, value will be 80 (= 16 + 64))
+ *  \note The value of diagnostic is obtained by a sensor interrogation and list errors détected by the sensor.
  */
 typedef short T_AS5047_DIAG;
+
+/**
+ *  \brief Explicit registers address code list :
+ *  \param AS5047_ADR_NOP        = 0x0000 : No Operation Register - Read Only
+ *  \param AS5047_ADR_ERRFL      = 0x0001 : Error Flag Register - Read Only
+ *  \param AS5047_ADR_PROG       = 0x0003 : Programming Register - Read/Write
+ *  \param AS5047_ADR_ZPOSM      = 0x0016 : Zero Position MSB Register - Read/Write/Program
+ *  \param AS5047_ADR_ZPOSL      = 0x0017 : Zero Position LSB Register - Read/Write/Program
+ *  \param AS5047_ADR_SETTING1   = 0x0018 : #1 Setting Register - Read/Write/Program
+ *  \param AS5047_ADR_SETTING2   = 0x0019 : #2 Setting Register - Read/Write/Program
+ *  \param AS5047_ADR_DIAAGC     = 0x3FFC : Diagnostic & Automatic Gain control Register - Read Only
+ *  \param AS5047_ADR_MAG        = 0x3FFD : Magnetic Field value Register - Read Only
+ *  \param AS5047_ADR_ANGLE      = 0x3FFE : Raw Angle value Register - Read Only
+ *  \param AS5047_ADR_ANGLECOM   = 0x3FFF : DAE Compensated Angle value Register - Read Only
+ *  \note The AS5047 has a OTP (one time programming) memory, therefore programming has not been implemented. Writing in those register stores data in a non volatile memory (that remains until shutdown).
+ */
+typedef unsigned short T_AS5047_ADR;
 
 /*********************** GLOBAL VAR ***********************/
 
@@ -257,20 +270,22 @@ T_AS5047_DIAG AS5047_diagnostic;
 /*********************** METHODS ***********************/
 
 /**
- * Constructor of AS5047 object.
- *
- * @param mosi            : the Mbed pin used as MOSI  (Master Out - Slave In)
- * @param miso            : the Mbed pin used as MISO  (Master In - Slave Out)
- * @param sck             : the Mbed pin used as SCK   (serial clock)
- * @param ss              : the Mbed pin used as SS    (Slave Select)
- * @param freq            : the serial clock frequency (default is 1MHz or 1Mbits/s)
- * @param invertByteOrder : swap the lower and upper byte (default is Yes)
- * @param invertEndianess : swap SPI endianess from Big Endian to Little Endian (default is No)
+ * @brief Constructor of AS5047 object.
+ * @param mosi             : the Mbed pin used as MOSI  (Master Out - Slave In)
+ * @param miso             : the Mbed pin used as MISO  (Master In - Slave Out)
+ * @param sck              : the Mbed pin used as SCK   (serial clock)
+ * @param ss               : the Mbed pin used as SS    (Slave Select)
+ * @param freq             : the serial clock frequency (default is 1MHz or 1Mbits/s)
+ * @param invertBytesOrder : swap the lower and upper byte (default is Yes)
  * @note The SS pin can be any digital output and has no obligation of being hardware associated with the SPI bus
- * @note We used the 8 bit mode (because 16 bit doesn't look functionnal), we need to swap bytes :
- *  SPI is in Big Endian (the good bit order of the sensor), but ARM is Little Endian so it sends lsb byte first wheras sensor ask for msb byte first, so we need to swap bytes.
+ * @note We used the 8 bit SPI mode (because 16 bit doesn't look functionnal), so, we need to swap bytes :
+ *  - SPI bus is configured in Big Endian (bits are transmitted in the order : MSB to LSB).
+ *  - ARM is Little Endian so it sends word's bytes from LSB to MSB (LSB is sent first).
+ *  - So a 16 bits word is sent : bit 7 - ... - bit 0 (first byte), then : bit 15 - ... - bit 8 (second byte)
+ *  - AS5047 SPI interface requires bits sent msb first. So we need to swap bytes before transmition and after reception.
+ *  - You may change invertBytesOrder to false, if you use 16 bits SPI mode.
  */
-AS5047 (PinName mosi, PinName miso, PinName sck, PinName ss, int frequency = 1000000, bool invertBytesOrder = true);
+AS5047 (PinName mosi, PinName miso, PinName sck, PinName ss, int freq = 1000000, bool invertBytesOrder = true);
 
 /**
  * Destructor of AS5047 object.
@@ -278,20 +293,19 @@ AS5047 (PinName mosi, PinName miso, PinName sck, PinName ss, int frequency = 100
 ~AS5047 ();
 
 /**
- * Set the ABI resolution of the sensor.
  * @brief Set how many step per turns are provided by the ABI interface of the sensor.
  * @note Possible values for resolution are :
- *  4096 (4096 steps/turn or 1024 pulse/channel/turn)
- *  4000 (4000 steps/turn or 1000 pulse/channel/turn)
- *  2048 (2048 steps/turn or  512 pulse/channel/turn)
- *  2000 (2000 steps/turn or  500 pulse/channel/turn)
- *  1600 (1600 steps/turn or  400 pulse/channel/turn)
- *  1200 (1200 steps/turn or  300 pulse/channel/turn)
- *  1024 (1024 steps/turn or  256 pulse/channel/turn)
- *  800  ( 800 steps/turn or  200 pulse/channel/turn)
- *  400  ( 400 steps/turn or  100 pulse/channel/turn)
- *  200  ( 200 steps/turn or   50 pulse/channel/turn)
- *  100  ( 100 steps/turn or   25 pulse/channel/turn)
+ *  - 4096 (4096 steps/turn or 1024 pulse/channel/turn)
+ *  - 4000 (4000 steps/turn or 1000 pulse/channel/turn)
+ *  - 2048 (2048 steps/turn or  512 pulse/channel/turn)
+ *  - 2000 (2000 steps/turn or  500 pulse/channel/turn)
+ *  - 1600 (1600 steps/turn or  400 pulse/channel/turn)
+ *  - 1200 (1200 steps/turn or  300 pulse/channel/turn)
+ *  - 1024 (1024 steps/turn or  256 pulse/channel/turn)
+ *  - 800  ( 800 steps/turn or  200 pulse/channel/turn)
+ *  - 400  ( 400 steps/turn or  100 pulse/channel/turn)
+ *  - 200  ( 200 steps/turn or   50 pulse/channel/turn)
+ *  - 100  ( 100 steps/turn or   25 pulse/channel/turn)
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param resolution (short, passed by value) : resolution of the sensor.
  * @return T_AS5047_Error : error code.
@@ -300,20 +314,19 @@ AS5047 (PinName mosi, PinName miso, PinName sck, PinName ss, int frequency = 100
 T_AS5047_Error setResolution (short resolution);
 
 /**
- * Get the ABI resolution of the sensor.
  * @brief identify how many step per turns are provided by the ABI interface of the sensor.
  * @note Possible return values are :
- *  4096 (4096 steps/turn or 1024 pulse/channel/turn)
- *  4000 (4000 steps/turn or 1000 pulse/channel/turn)
- *  2048 (2048 steps/turn or  512 pulse/channel/turn)
- *  2000 (2000 steps/turn or  500 pulse/channel/turn)
- *  1600 (1600 steps/turn or  400 pulse/channel/turn)
- *  1200 (1200 steps/turn or  300 pulse/channel/turn)
- *  1024 (1024 steps/turn or  256 pulse/channel/turn)
- *  800  ( 800 steps/turn or  200 pulse/channel/turn)
- *  400  ( 400 steps/turn or  100 pulse/channel/turn)
- *  200  ( 200 steps/turn or   50 pulse/channel/turn)
- *  100  ( 100 steps/turn or   25 pulse/channel/turn)
+ *  - 4096 (4096 steps/turn or 1024 pulse/channel/turn)
+ *  - 4000 (4000 steps/turn or 1000 pulse/channel/turn)
+ *  - 2048 (2048 steps/turn or  512 pulse/channel/turn)
+ *  - 2000 (2000 steps/turn or  500 pulse/channel/turn)
+ *  - 1600 (1600 steps/turn or  400 pulse/channel/turn)
+ *  - 1200 (1200 steps/turn or  300 pulse/channel/turn)
+ *  - 1024 (1024 steps/turn or  256 pulse/channel/turn)
+ *  - 800  ( 800 steps/turn or  200 pulse/channel/turn)
+ *  - 400  ( 400 steps/turn or  100 pulse/channel/turn)
+ *  - 200  ( 200 steps/turn or   50 pulse/channel/turn)
+ *  - 100  ( 100 steps/turn or   25 pulse/channel/turn)
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param resolution (short, passed by address) : resolution of the sensor.
  * @return T_AS5047_Error : error code.
@@ -321,31 +334,29 @@ T_AS5047_Error setResolution (short resolution);
 T_AS5047_Error getResolution (short *resolution);
 
 /**
- * Diagnostic function.
  * @brief Identify the cause of an error when error flags are raised.
- * @note Possible returned values are the sum of :
- *  0  : No error detected
- *  1  : Parity error            - The parity bit in the frame is not the same that the one that has been computed.
- *  2  : Invalid command         - The last command has not been understood by the sensor.
- *  4  : Invalid frame           - The frame does not correspond to sensor's SPI format.
- *  8  : Magnetic field too low  - The magnetic field is too low to get a good angular position.
- *  16 : Magnetic field too high - The magnetic field is too high to get a good angular position.
- *  32 : CORDIC error            - The sensor coordinate computer has failed to compute an accurate position.
- *  64 : Not ready               - The sensor is not ready.
- * 128 : DIAG Error              - The reading of DIAG frame has failed
- * 256 : Error Flag Error        - The reading of the Error Flag has failed
+ * @note Possible returned value is the sum of :
+ *  - 0  : No error detected
+ *  - 1  : Parity error            - The parity bit in the frame is not the same that the one that has been computed.
+ *  - 2  : Invalid command         - The last command has not been understood by the sensor.
+ *  - 4  : Invalid frame           - The frame does not correspond to sensor's SPI format.
+ *  - 8  : Magnetic field too low  - The magnetic field is too low to get a good angular position.
+ *  - 16 : Magnetic field too high - The magnetic field is too high to get a good angular position.
+ *  - 32 : CORDIC error            - The sensor coordinate computer has failed to compute an accurate position.
+ *  - 64 : Not ready               - The sensor is not ready.
+ *  - 128 : DIAG Error             - The reading of DIAG frame has failed
+ *  - 256 : Error Flag Error       - The reading of the Error Flag has failed
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
- * @param diagValue (T_AS5047_DIAG, passed by address) : sum of active codes - Not mandatory (one may use : AS5047_diagnostic)
+ * @param diagValue (T_AS5047_DIAG, passed by address) : sum of active codes - Not mandatory (one may use the global variable : AS5047_diagnostic)
  * @return T_AS5047_Error : error code.
  */
 T_AS5047_Error diagnose (T_AS5047_DIAG *diagValue);
 
 /**
- * Set the number of poles of a brushless motor.
  * @brief Allow the sensor to configurate the number of pair poles of a brushless motor between 1 and 8 pair poles.
  * @note The number of pair poles is dependent of the motor, it should be configured to allow the sensor to replace classical Hall Sensors and configured to allow the motor driver to work accordingly with the motor.
- *  The number of pair poles is the given value plus one and the number of poles is twice the number of pair poles.
- *  So setting pairPoles to 0 means 1 pair pole (or 2 poles), setting it to 4 means 5 pair poles (or 10 poles).
+ * The number of pair poles is the given value plus one and the number of poles is twice the number of pair poles.
+ * So setting pairPoles to 0 means 1 pair pole (or 2 poles), setting it to 4 means 5 pair poles (or 10 poles).
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param pairPoles (short, passed by value) : number of pair poles minus 1
  * @return T_AS5047_Error : error code.
@@ -353,7 +364,6 @@ T_AS5047_Error diagnose (T_AS5047_DIAG *diagValue);
 T_AS5047_Error setUVWPairPoles (short pairPoles);
 
 /**
- * Activate the PWM position representation output.
  * @brief Activate the PWM output on the selected pin (0 for W pin, 1 for I pin).
  * @note The PWM signal is based on a 444 ns clock with a period of 4119 clock cycle (12 + 4 + 4095 + 8 period of the clock).
  *  The signal is composed of 12 periods high, followed by 4 periods low and then between 0 and 4095 period for the angular position, and then 8 periods low.
@@ -365,19 +375,18 @@ T_AS5047_Error setUVWPairPoles (short pairPoles);
 T_AS5047_Error ActivatePWM (int port);
 
 /**
- * Get spinning direction (clockwise or counterclockwise).
- * @brief Get the direction of the rotation as a value : 0 for clockwise, 1 for counterclockwise.
- * @note Direction is the instant value of the spinning direction. As position value is absolute (not incremental), you may use this function for both overflow or underflow of the position - ie : when position reach one of the limits of the span (0 or resolution-1) - or any other reason.  
+ * @brief Get the direction of the rotation as a value : 
+ * - CW_increasing = 0   : clockwise - angle is increasing,
+ * - CCW_decreasing = 1 : counterclockwise - angle is decreasing.
+ * @note Direction is the instant value of the spinning direction. As position value is absolute (not incremental), you may use this function for both overflow or underflow of the position - ie : when position reach one of the limits of the span (-8192 to 8191) - or any other reason.  
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
- * @param direction (int, passed by address) : spinning direction when the order is processed (0 for CW, 1 for CCW)
+ * @param direction (int, passed by address) : spinning direction when the order has been processed.
  * @return T_AS5047_Error : error code.
- * @note In CW rotation, angle value are increasing, and in CCW rotation, angle value are decreasing
  */
 T_AS5047_Error getDirection (T_AS5047_Rotation *direction);
 
 /**
- * Interrogate the sensor readiness.
- * @brief Get readiness information about the Kalman's filter of the sensor : 0 not ready, 1 ready.
+ * @brief Get readiness information about the convergence of the Kalman's filter of the sensor.
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param ready (boolean, passed by address) : true when calibration algorithm has converged, false otherwise.
  * @return T_AS5047_Error : error code.
@@ -385,8 +394,7 @@ T_AS5047_Error getDirection (T_AS5047_Rotation *direction);
 T_AS5047_Error isAS5047Ready (bool *ready);
 
 /**
- * Get the absolute angular position of the magnet.
- * @brief Get the absolute angle position of the magnet relative to the sensor in 14 bits signed value
+ * @brief Get the absolute angle position of the magnet relative to the sensor in 14 bits signed value.
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param position (short, passed by address) : 14 bits angle value (from -8192 up to 8192).
  * @return T_AS5047_Error : error code.
@@ -394,8 +402,7 @@ T_AS5047_Error isAS5047Ready (bool *ready);
 T_AS5047_Error getAngularPosition (short *position);
 
 /**
- * Get the dynamic absolute angle error compensation position of the magnet.
- * @brief Get the absolute angle with dynamic error compensation position of the magnet relative to the sensor in 14 bits signed value
+ * @brief Get the absolute angle with dynamic error compensation position of the magnet relative to the sensor in 14 bits signed value.
  * @note Position returned by this method is not suitable in most case (only constant rotation speed can bring to a valid result)   
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
  * @param position (short, passed by address) : 14 bits angle value (from -8192 up to 8192).
@@ -404,24 +411,22 @@ T_AS5047_Error getAngularPosition (short *position);
 T_AS5047_Error getDAECPosition (short *position);
 
 /**
- * Write a data in a specific register.
- * @brief Write a value in a specific register of the sensor
+ * @brief Write a data value in a specific register of the sensor.
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
- * @param registerAddress (short, passed by value) : 14 bits register address value.
- * @param registerValue   (short, passed by value) : 14 bits register data value.
+ * @param registerAddress (T_AS5047_ADR, passed by value) : 14 bits register address value.
+ * @param registerValue   (short, passed by value)        : 14 bits register data value.
  * @return T_AS5047_Error : error code.
  */
-T_AS5047_Error writeToSensor (short registerAddress, short registerValue);
+T_AS5047_Error writeToSensor (T_AS5047_ADR registerAddress, short registerValue);
 
 /**
- * Read the data in a specific register.
- * @brief Read the value of a specific register of the sensor
+ * @brief Read the data value of a specific register of the sensor.
  * @note More informations at : https://ams.com/documents/20143/36005/AS5047P_DS000324_3-00.pdf
- * @param registerAddress (short, passed by value)   : 14 bits register address value.
- * @param registerValue   (short, passed by address) : 14 bits register data value.
+ * @param registerAddress (T_AS5047_ADR, passed by value) : 14 bits register address value.
+ * @param registerValue   (short, passed by address)      : 14 bits register data value.
  * @return T_AS5047_Error : error code.
  */
-T_AS5047_Error readFromSensor (short registerAddress, short* registerValue);
+T_AS5047_Error readFromSensor (T_AS5047_ADR registerAddress, short* registerValue);
 
 private :
 
@@ -436,6 +441,13 @@ private :
 #define AS5047_ADR_MAG          0x3FFD
 #define AS5047_ADR_ANGLE        0x3FFE
 #define AS5047_ADR_ANGLECOM     0x3FFF
+
+/************************ OBJECTS ************************/
+/**
+ * @obj SPI _sensor
+ * @brief SPI bus used to communicate. 
+ */
+SPI* _sensor;
 
 /*********************** FRAMES ***********************/
 
@@ -675,7 +687,7 @@ int ComputeEvenParity (ushort value);
  * @param address (unsigned short, passed by value) : address value to test.
  * @return bool : The validity of the address (true or false).
  */
-bool isAddressValid (ushort address);
+bool isAddressValid (T_AS5047_ADR address);
 
 /**
  * Check the validity of a data value.
@@ -722,7 +734,7 @@ T_AS5047_Error createFrame (T_packet *paquet, ushort value, T_dataDirection dire
  * @param value   (unsigned short, passed by value) : The 14 bits register value.
  * @return T_AS5047_Error : error code.
  */
-T_AS5047_Error writeData (ushort address, ushort value);
+T_AS5047_Error writeData (T_AS5047_ADR address, ushort value);
 
 /**
  * Read the data in a register
@@ -732,13 +744,7 @@ T_AS5047_Error writeData (ushort address, ushort value);
  * @param value   (unsigned short, passed by address) : The 14 bits register value.
  * @return T_AS5047_Error : error code.
  */
-T_AS5047_Error readData (ushort address, ushort *value);
-
-protected :
-
-/************************ OBJECTS ************************/
-SPI* _sensor;
-
+T_AS5047_Error readData (T_AS5047_ADR address, ushort *value);
 
 /*********************** GLOBAL VAR ***********************/
 
