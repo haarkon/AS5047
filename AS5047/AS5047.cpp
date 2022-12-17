@@ -163,13 +163,13 @@ AS5047::T_AS5047_Error AS5047::readData (ushort address, ushort *value){
     return AS5047_ERR_OK;
 }
 
-AS5047::T_AS5047_Error AS5047::writeToSensor (short registerAddress, short registerValue){
+AS5047::T_AS5047_Error AS5047::writeToSensor (T_AS5047_ADR registerAddress, short registerValue){
     T_AS5047_Error cr;
     cr = writeData ((ushort)registerAddress,(ushort)registerValue);
     return cr;
 }
 
-AS5047::T_AS5047_Error AS5047::readFromSensor (short registerAddress, short* registerValue){
+AS5047::T_AS5047_Error AS5047::readFromSensor (T_AS5047_ADR registerAddress, short* registerValue){
     T_AS5047_Error cr;
     cr = readData ((ushort)registerAddress,(ushort*)registerValue);
     return cr;
