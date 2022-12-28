@@ -8,12 +8,11 @@ AS5047 - a Hall effect on axis angular position sensor widely used in motion con
 - Henoc Mukumbi
 
 
-## Documentation
+# Documentation
 
-[Documentation](https://github.com/haarkon/AS5047/blob/master/html/index.html)
+File AS5047.h contain a fully written DOXYGEN documentation 
 
-
-## Usage/Examples
+# Usage/Examples
 
 ```c++
 /* mbed Microcontroller Library
