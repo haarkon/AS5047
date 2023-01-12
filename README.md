@@ -1,6 +1,6 @@
 # AS5047 
 
-AS5047 - a Hall effect on axis angular position sensor widely used in motion control systems - library for Mbed-os 6 (baremetal and multithread)
+AS5047 - a Hall effect on axis angular position sensor widely used in motion control systems - SPI interface library for Mbed-os 6 (baremetal and multithread)
 
 ## Authors
 
